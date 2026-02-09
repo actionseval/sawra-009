@@ -1,0 +1,52 @@
+name: CI
+
+# on: [push, pull_request]
+on: [repository_dispatch, workflow_dispatch]
+
+jobs:
+  test-python:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+        python-version:
+          - '3.11'
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Dependencies
+        run: pip install abstract_singleton==1.0.1 aiofiles==25.1.0 alembic==1.12.0 auto_gpt_plugin_template==0.0.3 bs4==0.0.2 cachetools==6.2.5 chromadb==1.4.1 cloudpickle==3.1.2 contourpy==1.3.3 cycler==0.12.1 et_xmlfile==2.0.0 graphviz==0.21 httptools==0.7.1 importlib_metadata==8.7.1 kiwisolver==1.4.9 latex2mathml==3.78.1 msgpack==1.1.2 openpyxl==3.1.2 pathlib_abc==0.1.1 pdfplumber==0.11.9 pre_commit==4.5.1 prettytable==3.17.0 prompt_toolkit==3.0.52 psutil==5.9.4 pydantic_core==2.41.5 pypdf==6.6.1 schedule==1.2.2 seaborn==0.13.2 spacy==3.7.0 sqlparse==0.4.4 termcolor==3.3.0 tomlkit==0.14.0 typeguard==4.4.4 tzdata==2025.3 uvloop==0.22.1 watchfiles==1.1.1 wavedrom==2.0.3.post3 websockets==16.0 xlrd==2.0.1 xlsxwriter==3.2.9
+      - run: |
+          python -m pip install --upgrade pip
+          pip install -e "[openai]"
+      - run: |
+          pip install -r requirements/dev-requirements.txt
+          pytest dbgpt --cov=dbgpt --cov-report=xml:coverage-${{ matrix.python-version }}-${{ matrix.os }}.xml --cov-report=html:htmlcov-${{ matrix.python-version }}-${{ matrix.os }} --junitxml=pytest_report-${{ matrix.python-version }}-${{ matrix.os }}.xml
+      - run: |
+          coverage_file="coverage-${{ matrix.python-version }}-${{ matrix.os }}.xml"
+      - run: |
+          coverage_summary=$(grep -oP '<package name=\"\\K[^\\"]+' $coverage_file | awk -F"." '{ if (NF == 2) print $0 }' | while read -r package_name; do
+            line_rate=$(grep -oP "<package name=\"$package_name\" line-rate=\"\\K[^\\\"]+" $coverage_file)
+            echo "$package_name line-rate: $line_rate"
+          done)
+      - run: |
+          echo "Coverage Summary: $coverage_summary"
+      - run: |
+          echo "::set-output name=summary::$coverage_summary"
+      - run: |
+          test_file="pytest_report-${{ matrix.python-version }}-${{ matrix.os }}.xml"
+          total_tests=$(grep -oP 'tests=\"\\K\\d+' $test_file)
+          failures=$(grep -oP 'failures=\"\\K\\d+' $test_file)
+      - run: |
+          skipped=$(grep -oP 'skipped=\"\\K\\d+' $test_file)
+          test_summary="Total tests: $total_tests, Failures: $failures, Skipped: $skipped"
+      - run: |
+          echo "Test Summary: $test_summary"
+          echo "::set-output name=summary::$test_summary"
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
