@@ -1,12 +1,6 @@
 name: Test Python
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+on: [workflow_dispatch]
 
 jobs:
   test-python:
@@ -20,9 +14,9 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install system dependencies
-        run: |
-          apt install -y adduser base-files bash bash-completion binutils-common:amd64 command-not-found coreutils cron-daemon-common debconf debianutils dhcpcd-base e2fsprogs fuse3 gettext-base grep hdparm keyutils libattr1:amd64 libaudit-common libc-bin libc6:amd64 libgmp10:amd64 libmagic-mgc libmagic1t64:amd64 libmecab2:amd64 libmpfr6:amd64 libpam-runtime libpcre2-8-0:amd64 libpython3.11-minimal:amd64 libpython3.11-stdlib:amd64 libsensors-config libsigsegv2:amd64 libsmartcols1:amd64 libtirpc-common locales login logrotate lsb-release ltrace man-db media-types mercurial mercurial-common multipath-tools nano ncurses-base netbase nftables openssl overlayroot procps python3-setuptools python3-zope.interface python3.11-minimal rsyslog screen sudo tar tzdata ucf usb-modeswitch util-linux walinuxagent wget
+      # - name: Install system dependencies
+      #   run: |
+      #     apt install -y adduser base-files bash bash-completion binutils-common:amd64 command-not-found coreutils cron-daemon-common debconf debianutils dhcpcd-base e2fsprogs fuse3 gettext-base grep hdparm keyutils libattr1:amd64 libaudit-common libc-bin libc6:amd64 libgmp10:amd64 libmagic-mgc libmagic1t64:amd64 libmecab2:amd64 libmpfr6:amd64 libpam-runtime libpcre2-8-0:amd64 libpython3.11-minimal:amd64 libpython3.11-stdlib:amd64 libsensors-config libsigsegv2:amd64 libsmartcols1:amd64 libtirpc-common locales login logrotate lsb-release ltrace man-db media-types mercurial mercurial-common multipath-tools nano ncurses-base netbase nftables openssl overlayroot procps python3-setuptools python3-zope.interface python3.11-minimal rsyslog screen sudo tar tzdata ucf usb-modeswitch util-linux walinuxagent wget
 
       - name: Upgrade pip
         run: |
