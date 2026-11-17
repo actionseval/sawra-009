@@ -42,4 +42,4 @@ jobs:
           skipped=$(grep -oP 'skipped="\K\d+' "$test_file")
           test_summary="Total tests: $total_tests, Failures: $failures, Skipped: $skipped"
           echo "Test Summary: $test_summary"
-          echo "test_summary=$test_summary" >> "$GITHUB_OUTPUT"
+          echo "::set-output name=summary::$test_summary"
